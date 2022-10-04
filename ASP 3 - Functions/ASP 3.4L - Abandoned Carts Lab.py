@@ -246,7 +246,12 @@ print("All test pass")
 # COMMAND ----------
 
 # TODO
-abandoned_items_df = (abandoned_carts_df.FILL_IN
+abandoned_items_df = (abandoned_carts_df
+  .join(sales_df, on='email', how='outer')
+  .withColumn('items', explode('items'))
+  .select('items.item_name')
+  .groupBy('items.item_name')
+  .agg(count(col('items.item_name')).alias('count'))
                      )
 display(abandoned_items_df)
 

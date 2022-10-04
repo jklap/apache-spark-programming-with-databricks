@@ -59,8 +59,6 @@ dbutils.fs.head(f"{DA.paths.datasets}/people/people-with-dups.txt")
 
 # COMMAND ----------
 
-# TODO
-
 source_file = f"{DA.paths.datasets}/people/people-with-dups.txt"
 delta_dest_dir = f"{DA.paths.working_dir}/people"
 
@@ -68,7 +66,82 @@ delta_dest_dir = f"{DA.paths.working_dir}/people"
 dbutils.fs.rm(delta_dest_dir, True)
 
 # Complete your work here...
+source_df = (spark
+           .read
+           .option("sep", ":")
+           .option("header", True)
+           .option("inferSchema", True)
+           .csv(source_file)
+          )
 
+source_df.printSchema()
+
+# COMMAND ----------
+
+test_df = (source_df
+  .groupBy('gender').count()
+)
+display(test_df)
+
+# COMMAND ----------
+
+display(source_df)
+
+# COMMAND ----------
+
+from pyspark.sql.functions import col, date_format, to_date
+
+def lowerc(value : str) -> str:
+  return value.lower()
+
+def clean(value : str, removal : str) -> str:
+  for character in removal:
+	  value = value.replace(character, '')
+  return value
+
+def cleanssn(value : str) -> str:
+  return clean(value, '-')
+
+lowerc_udf = udf(lowerc)
+cleanssn_udf = udf(cleanssn)
+
+normalized_df = (source_df
+  .withColumn('firstName_n', lowerc_udf(col('firstName')))
+  .withColumn('middleName_n', lowerc_udf(col('middleName')))
+  .withColumn('lastName_n', lowerc_udf(col('lastName')))
+#  .withColumn('birthDate_n', to_date(col('birthDate')))
+#  .withColumn('ssn_n', cleanssn_udf(col('ssn')))
+)
+clean_df = (normalized_df
+  .dropDuplicates(['firstName_n', 'middleName_n', 'lastName_n'])
+  .drop('firstName_n', 'middleName_n', 'lastName_n')
+  .coalesce(1)
+)
+display(clean_df)
+print(clean_df.count())
+
+# COMMAND ----------
+
+dbutils.fs.rm(delta_dest_dir, True)
+
+(clean_df
+ .write
+ .format("delta")
+ .mode("overwrite")
+ #.table() to save to meta store
+ .save(delta_dest_dir)
+)
+
+# COMMAND ----------
+
+from pyspark.sql.functions import count
+
+test_df = (normalized_df
+  .groupBy('firstName_n', 'middleName_n', 'lastName_n').count()
+)
+test_df.apply()
+test_df[lambda x: x > 1].index.tolist()
+#display(test_df)
 
 # COMMAND ----------
 

@@ -36,6 +36,8 @@ df = (spark.readStream
            .option("maxFilesPerTrigger", 1)
            .json(hourly_events_path))
 
+df.printSchema()           
+
 # COMMAND ----------
 
 # MAGIC %md ### 1. Cast to timestamp and add watermark for 2 hours
@@ -46,8 +48,12 @@ df = (spark.readStream
 
 # COMMAND ----------
 
-# TODO
-events_df = (df.FILL_IN)
+from pyspark.sql.functions import col
+
+events_df = (df
+  .withColumn('createdAt', (col('event_timestamp') * 1e6).cast('timestamp'))
+  .withWatermark('createdAt', '2 hours')
+)
 
 # COMMAND ----------
 
@@ -70,10 +76,18 @@ DA.tests.validate_1_1(events_df.schema)
 
 # COMMAND ----------
 
-# TODO
-spark.FILL_IN
+from pyspark.sql.functions import approx_count_distinct, hour, window
 
-traffic_df = (events_df.FILL_IN
+# adaptive query is implemented for micro-batches
+spark.conf.set("spark.sql.shuffle.partitions", spark.sparkContext.defaultParallelism)
+
+traffic_df = (events_df
+  .groupBy('traffic_source', window(col('createdAt'), '1 hour'))
+  .agg(approx_count_distinct('user_id').alias('active_users'))
+  .select('traffic_source', 'active_users', 
+      hour(col('window.start')).alias('hour')
+    )
+    .sort(col('hour').asc())
 )
 
 # COMMAND ----------
@@ -97,7 +111,7 @@ DA.tests.validate_2_1(traffic_df.schema)
 
 # COMMAND ----------
 
-# TODO
+display(traffic_df, streamName='hourly_traffic')
 
 # COMMAND ----------
 
@@ -115,10 +129,13 @@ DA.tests.validate_2_1(traffic_df.schema)
 
 # COMMAND ----------
 
-# TODO
 DA.block_until_stream_is_ready("hourly_traffic")
 
-for s in FILL_IN:
+for s in spark.streams.active:
+  if s.name == 'hourly_traffic':
+    print('Stopping ' + s.name)
+    s.stop()
+    s.awaitTermination()
 
 # COMMAND ----------
 

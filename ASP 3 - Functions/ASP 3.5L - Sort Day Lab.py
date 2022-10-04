@@ -58,8 +58,7 @@ def label_day_of_week(day: str) -> str:
 
 # COMMAND ----------
 
-# TODO
-label_dow_udf = FILL_IN
+label_dow_udf = udf(label_day_of_week)
 
 # COMMAND ----------
 
@@ -70,10 +69,30 @@ label_dow_udf = FILL_IN
 
 # COMMAND ----------
 
-# TODO
-final_df = FILL_IN
-
+final_df = (df
+  .withColumn('day', label_dow_udf(col('day')))
+  .sort(col('day'))
+)
 display(final_df)
+
+# COMMAND ----------
+
+def order_day_of_week(day: str) -> str:
+    dow = {"Mon": "1", "Tue": "2", "Wed": "3", "Thu": "4",
+           "Fri": "5", "Sat": "6", "Sun": "7"}
+    return dow.get(day)
+
+dow_sort = udf(order_day_of_week)
+
+# COMMAND ----------
+
+sorted_df = (df
+  #.withColumn('dow_e', date_format(col("date"), "E"))
+  .withColumn('dow', dow_sort(col('day')))
+  .sort('dow')
+  .drop('dow')
+)
+display(sorted_df)
 
 # COMMAND ----------
 

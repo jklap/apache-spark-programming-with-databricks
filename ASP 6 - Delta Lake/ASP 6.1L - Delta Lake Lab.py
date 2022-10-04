@@ -31,8 +31,12 @@ delta_sales_path = f"{DA.paths.working_dir}/delta-sales"
 
 # COMMAND ----------
 
-# TODO
-sales_df.FILL_IN
+(sales_df
+  .write
+  .format('delta')
+  .mode('overwrite')
+  .save(delta_sales_path)
+)
 
 # COMMAND ----------
 
@@ -50,8 +54,12 @@ assert len(dbutils.fs.ls(delta_sales_path)) > 0
 
 # COMMAND ----------
 
-# TODO
-updated_sales_df = FILL_IN
+import pyspark.sql.functions as F
+from pyspark.sql.functions import col
+
+updated_sales_df = (sales_df
+  .withColumn('items', F.size(F.col('items')))
+)
 display(updated_sales_df)
 
 # COMMAND ----------
@@ -74,8 +82,13 @@ print("All test pass")
 
 # COMMAND ----------
 
-# TODO
-updated_sales_df.FILL_IN
+(updated_sales_df
+ .write
+  .format('delta')
+  .mode('overwrite')
+  .option('overwriteSchema', 'true')
+  .save(delta_sales_path)
+)
 
 # COMMAND ----------
 
@@ -98,11 +111,13 @@ print("All test pass")
 
 # COMMAND ----------
 
-# TODO
+spark.sql('drop table if exists sales_delta')
+spark.sql(f'CREATE TABLE IF NOT EXISTS sales_delta USING DELTA OPTIONS (path = "{delta_sales_path}")')
 
 # COMMAND ----------
 
-# TODO
+# MAGIC %sql
+# MAGIC DESCRIBE HISTORY sales_delta
 
 # COMMAND ----------
 
@@ -123,8 +138,12 @@ print("All test pass")
 
 # COMMAND ----------
 
-# TODO
-old_sales_df = FILL_IN
+old_sales_df = (spark
+  .read
+  .format('delta')
+  .option('versionAsOf', 0)
+  .load(delta_sales_path)
+)
 display(old_sales_df)
 
 # COMMAND ----------
@@ -133,7 +152,7 @@ display(old_sales_df)
 
 # COMMAND ----------
 
-assert old_sales_df.select(size(col("items"))).first()[0] == 1
+assert old_sales_df.select(F.size(col("items"))).first()[0] == 1
 print("All test pass")
 
 # COMMAND ----------
