@@ -35,7 +35,7 @@
 
 # COMMAND ----------
 
-# <FILL_IN>
+# MAGIC %fs ls dbfs:/mnt/dbacademy-users/
 
 # COMMAND ----------
 
@@ -47,8 +47,7 @@
 
 # COMMAND ----------
 
-# TODO
-files = FILL_IN
+files = dbutils.fs.ls('dbfs:/mnt/dbacademy-users/')
 display(files)
 
 # COMMAND ----------
@@ -63,8 +62,29 @@ display(files)
 
 # COMMAND ----------
 
+spark.conf.set("whatever.events", DA.paths.events)
+spark.conf.set("whatever.sales", DA.paths.sales)
+spark.conf.set("whatever.products", DA.paths.products)
+spark.conf.set("whatever.users", DA.paths.users)
+
+# COMMAND ----------
+
 # MAGIC %sql
-# MAGIC -- TODO
+# MAGIC CREATE TABLE IF NOT EXISTS events
+# MAGIC USING DELTA
+# MAGIC OPTIONS (path = "${whatever.events}");
+# MAGIC 
+# MAGIC CREATE TABLE IF NOT EXISTS sales
+# MAGIC USING DELTA
+# MAGIC OPTIONS (path = "${whatever.sales}");
+# MAGIC 
+# MAGIC CREATE TABLE IF NOT EXISTS products
+# MAGIC USING DELTA
+# MAGIC OPTIONS (path = "${whatever.products}");
+# MAGIC 
+# MAGIC CREATE TABLE IF NOT EXISTS users
+# MAGIC USING DELTA
+# MAGIC OPTIONS (path = "${whatever.users}");
 
 # COMMAND ----------
 
@@ -100,7 +120,13 @@ display(files)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- TODO
+# MAGIC desc products;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select *
+# MAGIC from products;
 
 # COMMAND ----------
 
@@ -126,7 +152,8 @@ display(files)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- TODO
+# MAGIC select round(avg(purchase_revenue_in_usd), 0)
+# MAGIC from sales;
 
 # COMMAND ----------
 
@@ -155,7 +182,8 @@ display(files)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- TODO
+# MAGIC select distinct(event_name)
+# MAGIC from events;
 
 # COMMAND ----------
 

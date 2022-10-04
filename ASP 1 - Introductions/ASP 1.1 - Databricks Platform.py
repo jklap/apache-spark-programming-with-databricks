@@ -259,6 +259,10 @@ spark.conf.set("whatever.events", DA.paths.events)
 
 # COMMAND ----------
 
+print(type(_sqldf))
+
+# COMMAND ----------
+
 # MAGIC %md This table was saved in the database created for you in classroom setup.
 # MAGIC 
 # MAGIC See database name printed below.
@@ -311,7 +315,7 @@ print(f"Database Name: {DA.db_name}")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE WIDGET TEXT state DEFAULT "CA"
+# MAGIC CREATE WIDGET TEXT state DEFAULT "MN"
 
 # COMMAND ----------
 
@@ -323,6 +327,14 @@ print(f"Database Name: {DA.db_name}")
 # MAGIC SELECT *
 # MAGIC FROM events
 # MAGIC WHERE geo.state = getArgument("state")
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT geo.state, count(*)
+# MAGIC FROM events
+# MAGIC group by geo.state
+# MAGIC order by state
 
 # COMMAND ----------
 

@@ -1,12 +1,4 @@
 # Databricks notebook source
-# MAGIC %md-sandbox
-# MAGIC 
-# MAGIC <div style="text-align: center; line-height: 0; padding-top: 9px;">
-# MAGIC   <img src="https://databricks.com/wp-content/uploads/2018/03/db-academy-rgb-1200px.png" alt="Databricks Learning" style="width: 600px">
-# MAGIC </div>
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC # Spark SQL Lab
 # MAGIC 
@@ -34,8 +26,7 @@
 
 # COMMAND ----------
 
-# TODO
-events_df = FILL_IN
+events_df = spark.table('events')
 
 # COMMAND ----------
 
@@ -44,7 +35,15 @@ events_df = FILL_IN
 
 # COMMAND ----------
 
-# TODO
+events_df.schema
+
+# COMMAND ----------
+
+display(events_df)
+
+# COMMAND ----------
+
+events_df.show()
 
 # COMMAND ----------
 
@@ -56,9 +55,9 @@ events_df = FILL_IN
 
 # COMMAND ----------
 
-# TODO
 mac_df = (events_df
-          .FILL_IN
+          .where('device = "macOS"')
+          .orderBy('event_timestamp')
          )
 
 # COMMAND ----------
@@ -68,9 +67,8 @@ mac_df = (events_df
 
 # COMMAND ----------
 
-# TODO
-num_rows = mac_df.FILL_IN
-rows = mac_df.FILL_IN
+num_rows = mac_df.count()
+rows = mac_df.take(5)
 
 # COMMAND ----------
 
@@ -93,8 +91,12 @@ print("All test pass")
 
 # COMMAND ----------
 
-# TODO
-mac_sql_df = spark.FILL_IN
+mac_sql_df = spark.sql("""
+select *
+from events
+where device = 'macOS'
+order by event_timestamp
+""")
 
 display(mac_sql_df)
 

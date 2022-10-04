@@ -46,8 +46,11 @@ display(df)
 
 # COMMAND ----------
 
-# TODO
-datetime_df = (df.FILL_IN
+from pyspark.sql.functions import to_date
+
+datetime_df = (df
+  .withColumn('ts', (col('ts') / 1e6).cast('timestamp'))
+  .withColumn('date', to_date(col('ts')))
 )
 display(datetime_df)
 
@@ -90,8 +93,12 @@ print("All test pass")
 
 # COMMAND ----------
 
-# TODO
-active_users_df = (datetime_df.FILL_IN
+from pyspark.sql.functions import approx_count_distinct
+
+active_users_df = (datetime_df
+  .groupBy('user_id')
+  .agg(approx_count_distinct("user_id").alias("active_users"))
+  .sort('date')
 )
 display(active_users_df)
 

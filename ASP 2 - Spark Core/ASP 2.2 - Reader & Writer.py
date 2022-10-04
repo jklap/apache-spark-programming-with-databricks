@@ -46,6 +46,17 @@
 # COMMAND ----------
 
 users_csv_path = f"{DA.paths.datasets}/ecommerce/users/users-500k.csv"
+print(users_csv_path)
+
+# COMMAND ----------
+
+dbutils.fs.ls(users_csv_path)
+
+# COMMAND ----------
+
+dbutils.fs.head('dbfs:/mnt/dbacademy-datasets/apache-spark-programming-with-databricks/v03/ecommerce/users/users-500k.csv/part-00000-tid-6798248775191304424-0020915c-5cd2-4aae-8903-2d586d002073-2359-1-c000.csv')
+
+# COMMAND ----------
 
 users_df = (spark
            .read
@@ -56,6 +67,10 @@ users_df = (spark
           )
 
 users_df.printSchema()
+
+# COMMAND ----------
+
+users_df.count()
 
 # COMMAND ----------
 

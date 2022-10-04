@@ -96,8 +96,8 @@ print(sales_df.na.drop().count())
 
 sales_exploded_df = sales_df.withColumn("items", explode(col("items")))
 display(sales_exploded_df.select("items.coupon"))
-print(sales_exploded_df.select("items.coupon").count())
-print(sales_exploded_df.select("items.coupon").na.drop().count())
+print('Total rows: ' + str(sales_exploded_df.select("items.coupon").count()))
+print('No coupon: ' + str(sales_exploded_df.select("items.coupon").na.drop().count()))
 
 # COMMAND ----------
 
@@ -105,7 +105,15 @@ print(sales_exploded_df.select("items.coupon").na.drop().count())
 
 # COMMAND ----------
 
-display(sales_exploded_df.select("items.coupon").na.fill("NO COUPON"))
+updated_sales_df = sales_exploded_df.select("items.coupon").na.fill("NO COUPON")
+display(updated_sales_df)
+
+# COMMAND ----------
+
+display(updated_sales_df
+  .groupBy('coupon')
+  .agg(count('coupon'))
+)
 
 # COMMAND ----------
 
